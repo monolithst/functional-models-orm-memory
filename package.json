@@ -96,6 +96,7 @@
     "typescript": "^5.7.2"
   },
   "dependencies": {
+    "date-fns": "^3.6.0",
     "functional-models": "^3.0.12",
     "lodash": "^4.17.21"
   }
