@@ -63,6 +63,8 @@ const _checks = {
     searchValue > dataValue,
   [EqualitySymbol.lte]: (searchValue: number, dataValue: number) =>
     searchValue >= dataValue,
+  [EqualitySymbol.ne]: (searchValue: number, dataValue: number) =>
+    searchValue !== dataValue,
 }
 
 const _numberCompare = _emptyValueWrapper((property: PropertyQuery) => {

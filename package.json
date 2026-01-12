@@ -97,7 +97,7 @@
   },
   "dependencies": {
     "date-fns": "^3.6.0",
-    "functional-models": "^3.0.12",
+    "functional-models": "^3.6.4",
     "lodash": "^4.17.21"
   }
 }
