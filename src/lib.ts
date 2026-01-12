@@ -190,7 +190,9 @@ const filterResults = <T extends DataDescription>(
   return databaseEntries.filter(func)
 }
 
-export const defaultCollectionName = (model: ModelType<any>) => {
+export const defaultCollectionName = <T extends DataDescription>(
+  model: ModelType<T>
+) => {
   return model.getName()
 }
 

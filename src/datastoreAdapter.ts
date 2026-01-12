@@ -18,6 +18,9 @@ type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
 type Props = {
   seedData?: Record<string, Record<string | number, any>>
+  getCollectionNameForModel?: <T extends DataDescription>(
+    model: ModelType<T>
+  ) => string
 }
 
 const create = ({
