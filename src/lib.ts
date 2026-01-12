@@ -161,6 +161,11 @@ const _allCheck = (listOfChecks: any[]) => (obj: object) => {
     return x(obj)
   })
 }
+const _anyCheck = (listOfChecks: any[]) => (obj: object) => {
+  return listOfChecks.some(x => {
+    return x(obj)
+  })
+}
 
 const _buildChecks = (o: QueryTokens): ((obj: object) => boolean) => {
   if (isPropertyBasedQuery(o)) {
@@ -174,6 +179,12 @@ const _buildChecks = (o: QueryTokens): ((obj: object) => boolean) => {
     }
 
     const threes = threeitize(o)
+    // Check if all links are the same type (all OR or all AND)
+    const allLinksAreSame = threes.every(
+      ([, link]) => link.toLowerCase() === threes[0][1].toLowerCase()
+    )
+    const allLinksAreOr = allLinksAreSame && threes[0][1].toLowerCase() === 'or'
+
     const checks = threes.reduce((acc, [a, link, b]) => {
       const check1 = _buildChecks(a)
       const check2 = _buildChecks(b)
@@ -181,7 +192,10 @@ const _buildChecks = (o: QueryTokens): ((obj: object) => boolean) => {
       const combinedCheck = checkFunc(check1, check2)
       return [...acc, combinedCheck]
     }, [])
-    return _allCheck(checks)
+
+    // If all links are OR, combine checks with OR logic
+    // Otherwise, combine with AND logic (which handles mixed AND/OR correctly)
+    return allLinksAreOr ? _anyCheck(checks) : _allCheck(checks)
   }
   /* istanbul ignore next */
   throw new Error('Should never happen')
