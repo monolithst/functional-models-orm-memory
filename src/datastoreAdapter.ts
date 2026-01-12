@@ -23,13 +23,15 @@ type Props = {
   ) => string
 }
 
+type Database = Record<string, Record<PrimaryKeyType, ToObjectResult<any>>>
+
 const create = ({
   seedData,
   getCollectionNameForModel = defaultCollectionName,
-}: Props = {}): WithRequired<DatastoreAdapter, 'count'> => {
-  const database: Record<string, Record<string | number, any>> = clone(
-    seedData
-  ) || {}
+}: Props = {}): WithRequired<DatastoreAdapter, 'count'> & {
+  getRecords: () => Database
+} => {
+  const database: Database = clone(seedData) || {}
 
   const _getRecords = <TData extends DataDescription>(
     model: ModelType<TData>
@@ -43,6 +45,9 @@ const create = ({
   }
 
   return {
+    getRecords: () => {
+      return database
+    },
     delete: <TData extends DataDescription>(
       model: OrmModel<TData>,
       id: PrimaryKeyType
