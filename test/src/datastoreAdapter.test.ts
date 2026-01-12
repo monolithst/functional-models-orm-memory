@@ -62,6 +62,13 @@ describe('/src/datastoreAdapter.ts', () => {
       const expected = ['save', 'delete', 'retrieve', 'search', 'count']
       assert.includeMembers(actual, expected)
     })
+    describe('#getRecords()', () => {
+      it('should return the database', () => {
+        const instance = create()
+        const actual = instance.getRecords()
+        assert.isOk(actual)
+      })
+    })
     describe('#retrieve()', () => {
       it('should return an object from the seedData when the primary key is provided', async () => {
         const { datastoreAdapter, models } = setup(getSeedData1())
