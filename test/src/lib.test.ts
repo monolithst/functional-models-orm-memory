@@ -89,6 +89,59 @@ const TestData2 = [
   },
 ]
 
+const OrQueryTestData = [
+  {
+    id: 'edf73dba-216a-4e10-a38f-398a4b38350a',
+    name: 'name-2',
+    age: 2,
+  },
+  {
+    id: '2c3e6547-2d6b-44c3-ad2c-1220a3d305be',
+    name: 'name-3',
+    age: 10,
+  },
+  {
+    id: 'ed1dc8ff-fdc5-401c-a229-8566a418ceb5',
+    name: 'name-1',
+    age: 1,
+  },
+  {
+    id: 'name-4-id',
+    name: 'name-4',
+    age: 15,
+  },
+  {
+    id: 'name-5-id',
+    name: 'name-5',
+    age: 20,
+  },
+  {
+    id: 'name-7-id',
+    name: 'name-7',
+    age: 20,
+  },
+  {
+    id: 'name-6-id',
+    name: 'name-6',
+    age: 20,
+  },
+  {
+    id: 'name-9-id',
+    name: 'name-9',
+    age: 30,
+  },
+  {
+    id: 'name-10-id',
+    name: 'name-10',
+    age: 100,
+  },
+  {
+    id: 'name-8-id',
+    name: 'name-8',
+    age: 50,
+  },
+]
+
 describe('/src/lib.ts', () => {
   describe('#filterResults()', () => {
     it('should return 1 result with TestData2 when searching an object as a stringifyied json', () => {
@@ -329,6 +382,42 @@ describe('/src/lib.ts', () => {
       ).length
       const expected = 2
       assert.deepEqual(actual, expected)
+    })
+    it('should return 3 results with OrQueryTestData when searching three OR properties (name-8 OR name-1 OR name-10)', () => {
+      const actual = filterResults(
+        queryBuilder()
+          .property('name', 'name-8')
+          .or()
+          .property('name', 'name-1')
+          .or()
+          .property('name', 'name-10')
+          .compile(),
+        OrQueryTestData
+      )
+      const expected = 3
+      assert.equal(actual.length, expected, `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`)
+      // Verify we got the correct items (order doesn't matter)
+      const names = new Set(actual.map(r => r.name))
+      const expectedNames = new Set(['name-1', 'name-8', 'name-10'])
+      assert.deepEqual(names, expectedNames, 'Should find name-1, name-8, and name-10 (order independent)')
+    })
+    it('should return 3 results with OrQueryTestData when searching three OR properties in different order (name-1 OR name-10 OR name-8)', () => {
+      const actual = filterResults(
+        queryBuilder()
+          .property('name', 'name-1')
+          .or()
+          .property('name', 'name-10')
+          .or()
+          .property('name', 'name-8')
+          .compile(),
+        OrQueryTestData
+      )
+      const expected = 3
+      assert.equal(actual.length, expected, `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`)
+      // Verify we got the correct items (order doesn't matter)
+      const names = new Set(actual.map(r => r.name))
+      const expectedNames = new Set(['name-1', 'name-8', 'name-10'])
+      assert.deepEqual(names, expectedNames, 'Should find name-1, name-8, and name-10 (order independent)')
     })
   })
 })
