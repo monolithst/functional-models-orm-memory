@@ -24,6 +24,10 @@ const _emptyValueWrapper =
     const isEmptyCheck = property.value === undefined || property.value === null
     const subfunc = func(property)
     return (obj: object) => {
+      // If we are searching for a value that is not equal to the given value, return true if the value is not equal to the given value
+      if (property.equalitySymbol === EqualitySymbol.ne) {
+        return subfunc(obj)
+      }
       // @ts-ignore
       const value = obj[property.key]
       const valueIsEmpty = value === undefined || value === null
