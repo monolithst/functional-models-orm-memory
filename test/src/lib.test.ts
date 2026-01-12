@@ -395,11 +395,19 @@ describe('/src/lib.ts', () => {
         OrQueryTestData
       )
       const expected = 3
-      assert.equal(actual.length, expected, `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`)
+      assert.equal(
+        actual.length,
+        expected,
+        `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`
+      )
       // Verify we got the correct items (order doesn't matter)
       const names = new Set(actual.map(r => r.name))
       const expectedNames = new Set(['name-1', 'name-8', 'name-10'])
-      assert.deepEqual(names, expectedNames, 'Should find name-1, name-8, and name-10 (order independent)')
+      assert.deepEqual(
+        names,
+        expectedNames,
+        'Should find name-1, name-8, and name-10 (order independent)'
+      )
     })
     it('should return 3 results with OrQueryTestData when searching three OR properties in different order (name-1 OR name-10 OR name-8)', () => {
       const actual = filterResults(
@@ -413,11 +421,19 @@ describe('/src/lib.ts', () => {
         OrQueryTestData
       )
       const expected = 3
-      assert.equal(actual.length, expected, `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`)
+      assert.equal(
+        actual.length,
+        expected,
+        `Expected 3 results but got ${actual.length}. Results: ${JSON.stringify(actual.map(r => r.name))}`
+      )
       // Verify we got the correct items (order doesn't matter)
       const names = new Set(actual.map(r => r.name))
       const expectedNames = new Set(['name-1', 'name-8', 'name-10'])
-      assert.deepEqual(names, expectedNames, 'Should find name-1, name-8, and name-10 (order independent)')
+      assert.deepEqual(
+        names,
+        expectedNames,
+        'Should find name-1, name-8, and name-10 (order independent)'
+      )
     })
   })
 })
