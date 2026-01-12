@@ -8,7 +8,7 @@ import {
 import { create } from '../../src/datastoreAdapter'
 
 const getSeedData1 = () => ({
-  'functional-models-orm-memory-test-1-models': {
+  'functional-models-orm-memory/Test1Models': {
     '29a766b5-e77b-4099-a7f2-61cda0a29cc3': {
       id: '29a766b5-e77b-4099-a7f2-61cda0a29cc3',
       name: 'my-name-1',

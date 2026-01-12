@@ -8,6 +8,7 @@ import {
   EqualitySymbol,
   isALinkToken,
   isPropertyBasedQuery,
+  ModelType,
   OrmSearch,
   PropertyQuery,
   Query,
@@ -23,6 +24,10 @@ const _emptyValueWrapper =
     const isEmptyCheck = property.value === undefined || property.value === null
     const subfunc = func(property)
     return (obj: object) => {
+      // If we are searching for a value that is not equal to the given value, return true if the value is not equal to the given value
+      if (property.equalitySymbol === EqualitySymbol.ne) {
+        return subfunc(obj)
+      }
       // @ts-ignore
       const value = obj[property.key]
       const valueIsEmpty = value === undefined || value === null
@@ -62,6 +67,8 @@ const _checks = {
     searchValue > dataValue,
   [EqualitySymbol.lte]: (searchValue: number, dataValue: number) =>
     searchValue >= dataValue,
+  [EqualitySymbol.ne]: (searchValue: number, dataValue: number) =>
+    searchValue !== dataValue,
 }
 
 const _numberCompare = _emptyValueWrapper((property: PropertyQuery) => {
@@ -187,6 +194,12 @@ const filterResults = <T extends DataDescription>(
   validateOrmSearch(searchQuery)
   const func = _buildChecks(searchQuery.query)
   return databaseEntries.filter(func)
+}
+
+export const defaultCollectionName = <T extends DataDescription>(
+  model: ModelType<T>
+) => {
+  return model.getName()
 }
 
 export { filterResults }

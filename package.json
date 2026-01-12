@@ -1,6 +1,6 @@
 {
   "name": "functional-models-orm-memory",
-  "version": "3.0.0",
+  "version": "3.0.2",
   "description": "An in-memory datastore adapter for functional-models",
   "main": "index.js",
   "types": "index.d.ts",
@@ -97,7 +97,7 @@
   },
   "dependencies": {
     "date-fns": "^3.6.0",
-    "functional-models": "^3.0.12",
+    "functional-models": "^3.6.4",
     "lodash": "^4.17.21"
   }
 }

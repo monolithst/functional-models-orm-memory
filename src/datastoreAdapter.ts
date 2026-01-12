@@ -12,18 +12,21 @@ import {
 } from 'functional-models'
 import clone from 'lodash/clone'
 import merge from 'lodash/merge'
-import { filterResults } from './lib'
+import { defaultCollectionName, filterResults } from './lib'
 
 type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] }
 
 type Props = {
   seedData?: Record<string, Record<string | number, any>>
+  getCollectionNameForModel?: <T extends DataDescription>(
+    model: ModelType<T>
+  ) => string
 }
 
-const create = ({ seedData }: Props = {}): WithRequired<
-  DatastoreAdapter,
-  'count'
-> => {
+const create = ({
+  seedData,
+  getCollectionNameForModel = defaultCollectionName,
+}: Props = {}): WithRequired<DatastoreAdapter, 'count'> => {
   const database: Record<string, Record<string | number, any>> = clone(
     seedData
   ) || {}
@@ -31,7 +34,7 @@ const create = ({ seedData }: Props = {}): WithRequired<
   const _getRecords = <TData extends DataDescription>(
     model: ModelType<TData>
   ) => {
-    const name = model.getName()
+    const name = getCollectionNameForModel(model)
     if (!(name in database)) {
       // eslint-disable-next-line functional/immutable-data
       database[name] = {}

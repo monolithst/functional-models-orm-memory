@@ -254,6 +254,19 @@ describe('/src/lib.ts', () => {
       const expected = 2
       assert.deepEqual(actual, expected)
     })
+    it('should return 4 results with TestData1 when searching != 7', () => {
+      const actual = filterResults(
+        queryBuilder()
+          .property('aNumber', 7, {
+            type: DatastoreValueType.number,
+            equalitySymbol: EqualitySymbol.ne,
+          })
+          .compile(),
+        TestData1
+      )
+      const expected = 4
+      assert.deepEqual(actual.length, expected)
+    })
     it('should return 4 results with TestData1 when searching > 1', () => {
       const actual = filterResults(
         queryBuilder()
