@@ -8,6 +8,7 @@ import {
   EqualitySymbol,
   isALinkToken,
   isPropertyBasedQuery,
+  ModelType,
   OrmSearch,
   PropertyQuery,
   Query,
@@ -187,6 +188,10 @@ const filterResults = <T extends DataDescription>(
   validateOrmSearch(searchQuery)
   const func = _buildChecks(searchQuery.query)
   return databaseEntries.filter(func)
+}
+
+export const defaultCollectionName = (model: ModelType<any>) => {
+  return model.getName()
 }
 
 export { filterResults }
