@@ -69,6 +69,22 @@ describe('/src/datastoreAdapter.ts', () => {
         assert.isOk(actual)
       })
     })
+    describe('#bulkInsert()', () => {
+      it('should bulk insert the instances', async () => {
+        const { datastoreAdapter, models } = setup()
+        await datastoreAdapter.bulkInsert(models.Test1Models, [
+          models.Test1Models.create<'id'>({ name: 'my-name' }),
+        ])
+      })
+    })
+    describe('#bulkDelete()', () => {
+      it('should bulk delete the instances', async () => {
+        const { datastoreAdapter, models } = setup()
+        await datastoreAdapter.bulkDelete(models.Test1Models, [
+          '032c282c-b367-4d15-b19a-01c855b38f44',
+        ])
+      })
+    })
     describe('#retrieve()', () => {
       it('should return an object from the seedData when the primary key is provided', async () => {
         const { datastoreAdapter, models } = setup(getSeedData1())
