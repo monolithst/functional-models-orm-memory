@@ -28,7 +28,10 @@ type Database = Record<string, Record<PrimaryKeyType, ToObjectResult<any>>>
 const create = ({
   seedData,
   getCollectionNameForModel = defaultCollectionName,
-}: Props = {}): WithRequired<DatastoreAdapter, 'count'> & {
+}: Props = {}): WithRequired<
+  DatastoreAdapter,
+  'count' | 'bulkInsert' | 'bulkDelete'
+> & {
   getRecords: () => Database
 } => {
   const database: Database = clone(seedData) || {}
@@ -43,56 +46,90 @@ const create = ({
     }
     return database[name] as unknown as Record<string, ToObjectResult<TData>>
   }
+  const getRecords = () => {
+    return database
+  }
+
+  const bulkInsert = async <TData extends DataDescription>(
+    model: OrmModel<TData>,
+    instances: readonly ModelInstance<TData>[]
+  ): Promise<void> => {
+    return Promise.resolve().then(() => {
+      instances.reduce(async (accP, instance) => {
+        const acc = await accP
+        await save(instance)
+        return acc
+      }, Promise.resolve())
+    })
+  }
+  const bulkDelete = async <TData extends DataDescription>(
+    model: OrmModel<TData>,
+    ids: readonly PrimaryKeyType[]
+  ): Promise<void> => {
+    return Promise.resolve().then(() => {
+      ids.reduce(async (accP, id) => {
+        const acc = await accP
+        await deleteObj(model, id)
+        return acc
+      }, Promise.resolve())
+    })
+  }
+
+  const deleteObj = async <TData extends DataDescription>(
+    model: OrmModel<TData>,
+    id: PrimaryKeyType
+  ): Promise<void> => {
+    const records = _getRecords(model)
+    // eslint-disable-next-line functional/immutable-data
+    delete records[id]
+    return Promise.resolve(undefined)
+  }
+
+  const retrieve = async <TData extends DataDescription>(
+    model: OrmModel<TData>,
+    primaryKey: PrimaryKeyType
+  ): Promise<Maybe<ToObjectResult<TData>>> => {
+    return Promise.resolve().then(() => {
+      const records = _getRecords(model)
+      return records[primaryKey] as unknown as ToObjectResult<TData> | undefined
+    })
+  }
+  const save = async <TData extends DataDescription>(
+    instance: ModelInstance<TData>
+  ): Promise<ToObjectResult<TData>> => {
+    return Promise.resolve().then(async () => {
+      const model = instance.getModel()
+      const data = await instance.toObj<TData>()
+      const records = _getRecords(model)
+      merge(records, { [await instance.getPrimaryKey()]: data })
+      return data
+    })
+  }
+  const search = <TData extends DataDescription>(
+    model: OrmModel<TData>,
+    query: OrmSearch
+  ): Promise<DatastoreSearchResult<TData>> => {
+    const records = _getRecords(model)
+    const instances = filterResults(query, Object.values(records))
+    return Promise.resolve({ instances: instances, page: undefined })
+  }
+
+  const count = <TData extends DataDescription>(model: OrmModel<TData>) => {
+    return Promise.resolve().then(() => {
+      const records = _getRecords(model)
+      return Object.keys(records).length
+    })
+  }
 
   return {
-    getRecords: () => {
-      return database
-    },
-    delete: <TData extends DataDescription>(
-      model: OrmModel<TData>,
-      id: PrimaryKeyType
-    ): Promise<void> => {
-      const records = _getRecords(model)
-      // eslint-disable-next-line functional/immutable-data
-      delete records[id]
-      return Promise.resolve(undefined)
-    },
-    retrieve: <TData extends DataDescription>(
-      model: OrmModel<TData>,
-      primaryKey: PrimaryKeyType
-    ): Promise<Maybe<ToObjectResult<TData>>> => {
-      return Promise.resolve().then(() => {
-        const records = _getRecords(model)
-        return records[primaryKey] as unknown as
-          | ToObjectResult<TData>
-          | undefined
-      })
-    },
-    save: async <TData extends DataDescription>(
-      instance: ModelInstance<TData>
-    ): Promise<ToObjectResult<TData>> => {
-      return Promise.resolve().then(async () => {
-        const model = instance.getModel()
-        const data = await instance.toObj<TData>()
-        const records = _getRecords(model)
-        merge(records, { [await instance.getPrimaryKey()]: data })
-        return data
-      })
-    },
-    search: <TData extends DataDescription>(
-      model: OrmModel<TData>,
-      query: OrmSearch
-    ): Promise<DatastoreSearchResult<TData>> => {
-      const records = _getRecords(model)
-      const instances = filterResults(query, Object.values(records))
-      return Promise.resolve({ instances: instances, page: undefined })
-    },
-    count: <TData extends DataDescription>(model: OrmModel<TData>) => {
-      return Promise.resolve().then(() => {
-        const records = _getRecords(model)
-        return Object.keys(records).length
-      })
-    },
+    save,
+    delete: deleteObj,
+    retrieve,
+    search,
+    count,
+    bulkInsert,
+    bulkDelete,
+    getRecords,
   }
 }
 
