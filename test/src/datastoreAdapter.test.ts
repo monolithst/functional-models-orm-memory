@@ -127,6 +127,15 @@ describe('/src/datastoreAdapter.ts', () => {
       })
     })
     describe('#search()', () => {
+      it('should return two objects when using SeedData1 and take is 2', async () => {
+        const { datastoreAdapter, models } = setup(getSeedData1())
+        const actual = await datastoreAdapter.search(
+          models.Test1Models,
+          queryBuilder().take(2).compile()
+        )
+        const expected = 2
+        assert.equal(actual.instances.length, expected)
+      })
       it('should return one object name the name is provided in the search when using SeedData1', async () => {
         const { datastoreAdapter, models } = setup(getSeedData1())
         const actual = await datastoreAdapter.search(

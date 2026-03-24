@@ -111,6 +111,10 @@ const create = ({
   ): Promise<DatastoreSearchResult<TData>> => {
     const records = _getRecords(model)
     const instances = filterResults(query, Object.values(records))
+    if (query.take) {
+      const limitedInstances = instances.slice(0, query.take)
+      return Promise.resolve({ instances: limitedInstances, page: undefined })
+    }
     return Promise.resolve({ instances: instances, page: undefined })
   }
 
