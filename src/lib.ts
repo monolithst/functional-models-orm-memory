@@ -45,14 +45,45 @@ const _emptyValueWrapper =
   }
 
 const _stringCompare = _emptyValueWrapper((property: PropertyQuery) => {
-  const rePrefix = property.options.startsWith ? '^' : ''
-  const reSuffix = property.options.endsWith ? '$' : ''
-  const flags = property.options.caseSensitive ? '' : 'i'
-  const re = new RegExp(`${rePrefix}${property.value}${reSuffix}`, flags)
   return (obj: object) => {
     // @ts-ignore
     const value = obj[property.key]
-    return re.test(value)
+    const valueIsEmpty = value === undefined || value === null
+    const searchIsEmpty =
+      property.value === undefined || property.value === null
+
+    const caseSensitive = Boolean(property.options.caseSensitive)
+    const normalize = (v: any) => {
+      const s = String(v)
+      return caseSensitive ? s : s.toLowerCase()
+    }
+
+    // Handle ne with empty values (empty wrapper bypasses ne)
+    if (valueIsEmpty || searchIsEmpty) {
+      const equalWhenEmpty = valueIsEmpty && searchIsEmpty
+      return property.equalitySymbol === EqualitySymbol.ne
+        ? !equalWhenEmpty
+        : equalWhenEmpty
+    }
+
+    const haystack = normalize(value)
+    const needle = normalize(property.value)
+
+    const includes = Boolean(property.options.includes)
+    const startsWith = Boolean(property.options.startsWith)
+    const endsWith = Boolean(property.options.endsWith)
+
+    const matches = includes
+      ? haystack.includes(needle)
+      : startsWith && endsWith
+        ? haystack === needle
+        : startsWith
+          ? haystack.startsWith(needle)
+          : endsWith
+            ? haystack.endsWith(needle)
+            : haystack === needle
+
+    return property.equalitySymbol === EqualitySymbol.ne ? !matches : matches
   }
 })
 
