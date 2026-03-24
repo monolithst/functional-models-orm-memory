@@ -1,7 +1,19 @@
 import { assert } from 'chai'
 import { Given, When, Then } from '@cucumber/cucumber'
 import { datastoreAdapter } from '../../src'
-import { createOrm, Orm, PrimaryKeyUuidProperty, queryBuilder, TextProperty } from 'functional-models'
+import {
+  createOrm,
+  DatetimeProperty,
+  IntegerProperty,
+  Model,
+  ModelType,
+  ModelWithReferencesConstructorProps,
+  Orm,
+  OrmModelInstance,
+  PrimaryKeyUuidProperty,
+  queryBuilder,
+  TextProperty,
+} from 'functional-models'
 
 const SeedData = {
   SeedData1: () => {
@@ -60,6 +72,91 @@ const Models = {
   }
 }
 
+const MODELS: Record<
+  string,
+  (props: ModelWithReferencesConstructorProps) => {
+    models: readonly ModelType<any>[]
+    instances: readonly OrmModelInstance<any>[]
+  }
+> = {
+  ModelList1: ({ Model, fetcher }) => {
+    const ModelA = Model({
+      pluralName: 'ModelA',
+      namespace: 'functional-models-orm-memory',
+      properties: {
+        id: PrimaryKeyUuidProperty(),
+        name: TextProperty({ required: true }),
+        age: IntegerProperty({ required: true }),
+        datetime: DatetimeProperty(),
+      },
+    })
+
+    return {
+      models: [ModelA] as ModelType<any>[],
+      instances: [
+        ModelA.create({
+          id: 'edf73dba-216a-4e10-a38f-398a4b38350a',
+          name: 'name-2',
+          age: 2,
+        }),
+        ModelA.create({
+          id: '2c3e6547-2d6b-44c3-ad2c-1220a3d305be',
+          name: 'name-3',
+          age: 10,
+          datetime: new Date('2020-02-01T00:00:00.000Z'),
+        }),
+        ModelA.create({
+          id: 'ed1dc8ff-fdc5-401c-a229-8566a418ceb5',
+          name: 'name-1',
+          age: 1,
+          datetime: new Date('2020-01-01T00:00:00.000Z'),
+        }),
+        ModelA.create({
+          name: 'name-4',
+          age: 15,
+          datetime: new Date('2020-03-01T00:00:00.000Z'),
+        }),
+        ModelA.create({
+          name: 'name-5',
+          age: 20,
+        }),
+        ModelA.create({
+          name: 'name-7',
+          age: 20,
+        }),
+        ModelA.create({
+          name: 'name-6',
+          age: 20,
+        }),
+        ModelA.create({
+          name: 'name-9',
+          age: 30,
+        }),
+        ModelA.create({
+          name: 'name-10',
+          age: 100,
+          datetime: new Date('2020-05-01T00:00:00.000Z'),
+        }),
+        ModelA.create({
+          name: 'name-8',
+          age: 50,
+        }),
+      ] as OrmModelInstance<any>[],
+    }
+  },
+}
+
+const SEARCHES = {
+  OrPropertySearch: () =>
+    queryBuilder()
+      .property('name', 'name-8')
+      .or()
+      .property('name', 'name-1')
+      .or()
+      .property('name', 'name-10')
+      .compile(),
+}
+
 Given('a datastore using seed data {word} is created', function(key: string) {
   const seedData = SeedData[key]()
   this.datastoreAdapter = datastoreAdapter.create({seedData})
@@ -93,4 +190,39 @@ Then('the result matches {word}', function(dataKey: string) {
   const expected = Data[dataKey]()
   const actual = this.result
   assert.deepEqual(actual, expected)
+})
+
+Given('an orm is setup', function () {
+  this.datastoreAdapter = datastoreAdapter.create()
+  this.orm = createOrm({ datastoreAdapter: this.datastoreAdapter })
+})
+
+Given(
+  '{word} is created and inserted into the database',
+  async function (key: string) {
+    const result = MODELS[key](this.orm)
+    this.models = result.models
+    // @ts-ignore
+    await result.instances.reduce(async (accP, i) => {
+      await accP
+      return i.save()
+    }, Promise.resolve())
+  }
+)
+
+When(
+  'search named {word} is executed on model named {word}',
+  async function (key: string, modelPluralName: string) {
+    const search = SEARCHES[key]()
+    const model = this.models.find(
+      x => x.getModelDefinition().pluralName === modelPluralName
+    )
+    this.result = await model.search(search)
+  }
+)
+
+Then(/^(\d+) instances are found$/, function (count: number) {
+  const actual = this.result.instances.length
+  const expected = count
+  assert.equal(actual, expected)
 })
